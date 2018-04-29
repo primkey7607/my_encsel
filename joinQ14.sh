@@ -4,7 +4,7 @@
 BASEDIR=$(pwd)
 for i in 1 5 10 15 20; do
         cd ~/tpch-generator/dbgen/
-        ./dbgen -f -s $i
+        #./dbgen -f -s $i
         echo "scale:$i"
         for p_key in DICT PLAIN; do
                 for l_key in DICT PLAIN; do
