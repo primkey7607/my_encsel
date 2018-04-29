@@ -28,25 +28,31 @@ import java.lang.management.ManagementFactory
 class Profiler {
 
   val threadBean = ManagementFactory.getThreadMXBean
+  val memBean = ManagementFactory.getMemoryMXBean
 
   var wcsum = 0L
   var cpusum = 0L
   var usersum = 0L
 
+  var heapUse = 0L
+
   var wcstart = 0L
   var cpustart = 0L
   var userstart = 0L
+  var heapInit = 0L
 
   def mark: Unit = {
     wcstart = System.currentTimeMillis()
     cpustart = threadBean.getCurrentThreadCpuTime
     userstart = threadBean.getCurrentThreadUserTime
+    heapInit = memBean.getHeapMemoryUsage().getInit()
   }
 
   def pause: Unit = {
     wcsum += System.currentTimeMillis() - wcstart
     cpusum += threadBean.getCurrentThreadCpuTime - cpustart
     usersum += threadBean.getCurrentThreadUserTime - userstart
+    heapUse = memBean.getHeapMemoryUsage().getUsed()
   }
 
   def stop: ProfileBean = {

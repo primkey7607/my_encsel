@@ -47,6 +47,7 @@ class HashJoin extends Join {
     val probeProjectSchema = SchemaUtils.project(probeSchema, probeProject)
 
     val hashtable = new mutable.HashMap[Any, Row]()
+    val enchashtable = new mutable.HashMap[Any, Row]()
 
     val joinedSchema = SchemaUtils.join(hashSchema, probeSchema, hashProject, probeProject)
     val outputRecorder = new ColumnTempTable(joinedSchema)
@@ -64,7 +65,8 @@ class HashJoin extends Join {
           case -1 => {
             val hashKeyCol = hashSchema.getColumns()(joinKey._1)
             new ColumnReaderImpl(hashKeyCol, rowGroup.getPageReader(hashKeyCol),
-              new PipePrimitiveConverter(hashSchema.getType(joinKey._1).asPrimitiveType()), version)
+              //new PipePrimitiveConverter(hashSchema.getType(joinKey._1).asPrimitiveType()), version)
+              new MyConverter(hashSchema.getType(joinKey._1).asPrimitiveType()), version)
           }
           case i => {
             hashRowReaders(i)
@@ -72,8 +74,14 @@ class HashJoin extends Join {
         }
         // Build hash table
         for (i <- 0L until rowGroup.getRowCount) {
+         
           val hashKey = DataUtils.readValue(hashKeyReader)
-          //println(hashKeyReader.getCurrentValueDictionaryID)
+          //val tmp2 = hashKeyReader.readEncodedValue(hashKeyReader.getDescriptor())
+          //val hashKey = hashKeyReader.getDictId()
+          //hashKeyReader.consume()
+          //val tmp = hashKeyReader.getCurrentValueDictionaryID()
+          //val tmp = hashKeyReader.getDictId()
+          //enchashtable.put(tmp, hashRecorder.getCurrentRecord)
 
           hashtable.put(hashKey, hashRecorder.getCurrentRecord)
           hashRecorder.start()
@@ -84,6 +92,7 @@ class HashJoin extends Join {
           hashRecorder.end()
 
         }
+
       }
     })
 
@@ -98,12 +107,18 @@ class HashJoin extends Join {
         // As an assumption, the probe readers will not contain hash key as if the key is included in the result,
         // it will be maintained in the hash table, not here
         val hashKeyReader = new ColumnReaderImpl(hashKeyCol, rowGroup.getPageReader(hashKeyCol),
-          new PipePrimitiveConverter(probeSchema.getType(joinKey._2).asPrimitiveType()), version)
+          //new PipePrimitiveConverter(probeSchema.getType(joinKey._2).asPrimitiveType()), version)
+          new MyConverter(hashSchema.getType(joinKey._2).asPrimitiveType()), version)
         // Build bitmap
         val bitmap = new RoaringBitmap()
+        val encbitmap = new RoaringBitmap()
 
         for (i <- 0L until rowGroup.getRowCount) {
+
           val hashKey = DataUtils.readValue(hashKeyReader)
+          //val tmp = hashKeyReader.getCurrentValueDictionaryID()
+          //val tmp = hashKeyReader.getDictId()
+
           hashtable.get(hashKey) match {
             case Some(row) => {
               // Record match in bitmap
@@ -116,7 +131,22 @@ class HashJoin extends Join {
             case None => {}
           }
           hashKeyReader.consume()
+
+        /*enchashtable.get(tmp) match {
+                    case Some(row) => {
+                      // Record match in bitmap
+                      encbitmap.set(i, true)
+                      // Write remaining field to output
+                      for (j <- 0 until hashProjectSchema.getColumns.size) {
+                        DataUtils.writeValue(outputRecorder.getConverter(j).asPrimitiveConverter(), row.getData()(j))
+                      }
+                    }
+                    case None => {}
+                  }
+                  hashKeyReader.consume()*/
+
         }
+
 
         // Based on bitmap, write remaining columns
         for (j <- 0 until probeProjectSchema.getColumns.size) {
