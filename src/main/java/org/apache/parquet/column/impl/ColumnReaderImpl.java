@@ -335,8 +335,9 @@ public class ColumnReaderImpl implements ColumnReader {
   }
 
   public int getDictId(){
-    //return dataColumn.readValueDictionaryId();
-    return binding.getDictionaryId();
+    return dataColumn.readValueDictionaryId();
+    //binding.read();
+    //return binding.getDictionaryId();
   }
 
   /**

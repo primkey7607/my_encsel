@@ -79,7 +79,7 @@ class HashJoin extends Join {
           //val tmp2 = hashKeyReader.readEncodedValue(hashKeyReader.getDescriptor())
           val hashKey = hashKeyReader.getDictId()
           println(hashKey) 
-          hashKeyReader.consume()
+          //hashKeyReader.consume()
           //val tmp = hashKeyReader.getCurrentValueDictionaryID()
           //val tmp = hashKeyReader.getDictId()
           //enchashtable.put(tmp, hashRecorder.getCurrentRecord)
