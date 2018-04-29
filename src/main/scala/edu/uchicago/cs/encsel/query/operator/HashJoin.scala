@@ -91,7 +91,7 @@ class HashJoin extends Join {
           }else{
             hashKey = hashKeyReader.getDictId()
           }
-          println(hashKey) 
+          //println(hashKey) 
           //hashKeyReader.consume()
           //val tmp = hashKeyReader.getCurrentValueDictionaryID()
           //val tmp = hashKeyReader.getDictId()
