@@ -76,6 +76,7 @@ class HashJoin extends Join {
         for (i <- 0L until rowGroup.getRowCount) {
          
           val hashKey = DataUtils.readValue(hashKeyReader)
+          println(hashKey) 
           //val tmp2 = hashKeyReader.readEncodedValue(hashKeyReader.getDescriptor())
           //val hashKey = hashKeyReader.getDictId()
           //hashKeyReader.consume()
