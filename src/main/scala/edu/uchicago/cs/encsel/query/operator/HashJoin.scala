@@ -47,7 +47,7 @@ class HashJoin extends Join {
     val probeProjectSchema = SchemaUtils.project(probeSchema, probeProject)
 
     val hashtable = new mutable.HashMap[Any, Row]()
-    val enchashtable = new mutable.HashMap[Any, Row]()
+    //val enchashtable = new mutable.HashMap[Any, Row]()
 
     val joinedSchema = SchemaUtils.join(hashSchema, probeSchema, hashProject, probeProject)
     val outputRecorder = new ColumnTempTable(joinedSchema)
@@ -75,11 +75,11 @@ class HashJoin extends Join {
         // Build hash table
         for (i <- 0L until rowGroup.getRowCount) {
          
-          val hashKey = DataUtils.readValue(hashKeyReader)
-          println(hashKey) 
+          //val hashKey = DataUtils.readValue(hashKeyReader)
           //val tmp2 = hashKeyReader.readEncodedValue(hashKeyReader.getDescriptor())
-          //val hashKey = hashKeyReader.getDictId()
-          //hashKeyReader.consume()
+          val hashKey = hashKeyReader.getDictId()
+          println(hashKey) 
+          hashKeyReader.consume()
           //val tmp = hashKeyReader.getCurrentValueDictionaryID()
           //val tmp = hashKeyReader.getDictId()
           //enchashtable.put(tmp, hashRecorder.getCurrentRecord)
@@ -116,9 +116,9 @@ class HashJoin extends Join {
 
         for (i <- 0L until rowGroup.getRowCount) {
 
-          val hashKey = DataUtils.readValue(hashKeyReader)
+          //val hashKey = DataUtils.readValue(hashKeyReader)
           //val tmp = hashKeyReader.getCurrentValueDictionaryID()
-          //val tmp = hashKeyReader.getDictId()
+          val hashKey = hashKeyReader.getDictId()
 
           hashtable.get(hashKey) match {
             case Some(row) => {
