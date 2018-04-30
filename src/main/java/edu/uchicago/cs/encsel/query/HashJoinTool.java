@@ -50,7 +50,7 @@ public class HashJoinTool {
 
 
         EncContext.context.get().put(TPCHSchema.lineitemSchema().getColumns().get(10).toString(), new Object[]{bitLength,intbound});
-        EncContext.context.get().put(TPCHSchema.partSchema().getColumns().get(4).toString(), new Object[]{pbl,pib});
+        EncContext.context.get().put(TPCHSchema.orderSchema().getColumns().get(4).toString(), new Object[]{pbl,pib});
 
         int repeat = 10;
         long clocktime = 0L;
@@ -60,8 +60,8 @@ public class HashJoinTool {
         for (int i = 0; i < repeat; i++) {
             Profiler profiler = new Profiler();
             profiler.mark();
-            System.out.println(EncContext.context.get().get(TPCHSchema.partSchema().getColumns().get(4).toString())[1]);
-            TempTable result = new HashJoin().join(new File(part+".parquet").toURI(), TPCHSchema.partSchema(),
+            System.out.println(EncContext.context.get().get(TPCHSchema.orderSchema().getColumns().get(4).toString())[1]);
+            TempTable result = new HashJoin().join(new File(part+".parquet").toURI(), TPCHSchema.orderSchema(),
                     new File(lineitem+".parquet").toURI(), TPCHSchema.lineitemSchema(),
                     joinindex, new int[]{2}, new int[]{5, 6});
             profiler.pause();
