@@ -74,7 +74,8 @@ public class HashJoinTool {
             clocktime = clocktime + profiler.wcsum();
             cputime = cputime + profiler.cpusum();
             usertime = usertime + profiler.usersum();
-            System.out.println(String.format("%s,%d,%d,%d,%d", "round"+i, profiler.wcsum(), profiler.cpusum(),profiler.usersum(),profiler.heapUse()));
+            System.out.println(String.format("%s,%d,%d,%d", "round"+i, profiler.wcsum(), profiler.cpusum(),profiler.usersum()));
+            //System.out.println(String.format("%s,%d,%d,%d,%d", "round"+i, profiler.wcsum(), profiler.cpusum(),profiler.usersum(),profiler.heapUse()));
         }
         System.out.println(String.format("%s,%d,%d,%d", "Hashjoin", clocktime / repeat, cputime / repeat, usertime / repeat));
     }
