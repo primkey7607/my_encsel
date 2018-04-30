@@ -60,7 +60,7 @@ public class HashJoinTool {
         for (int i = 0; i < repeat; i++) {
             Profiler profiler = new Profiler();
             profiler.mark();
-            System.out.println(EncContext.context.get().get(TPCHSchema.orderSchema().getColumns().get(0).toString())[1]);
+            System.out.println(EncContext.context.get().get(TPCHSchema.orderSchema().getColumns().get(4).toString())[1]);
             TempTable result = new HashJoin().join(new File(part+".parquet").toURI(), TPCHSchema.orderSchema(),
                     new File(lineitem+".parquet").toURI(), TPCHSchema.lineitemSchema(),
                     joinindex, new int[]{2}, new int[]{5, 6});
@@ -74,7 +74,7 @@ public class HashJoinTool {
             clocktime = clocktime + profiler.wcsum();
             cputime = cputime + profiler.cpusum();
             usertime = usertime + profiler.usersum();
-            System.out.println(String.format("%s,%d,%d,%d,%d", "round"+i, profiler.wcsum(), profiler.cpusum(),profiler.usersum()));
+            System.out.println(String.format("%s,%d,%d,%d", "round"+i, profiler.wcsum(), profiler.cpusum(),profiler.usersum()));
         }
         System.out.println(String.format("%s,%d,%d,%d", "Hashjoin", clocktime / repeat, cputime / repeat, usertime / repeat));
     }

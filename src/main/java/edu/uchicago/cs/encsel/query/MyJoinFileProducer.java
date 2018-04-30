@@ -58,7 +58,7 @@ public class MyJoinFileProducer {
         EncContext.encoding.get().put(TPCHSchema.lineitemSchema().getColumns().get(index[0]).toString(), Encoding.valueOf(PPencoding));
         EncContext.context.get().put(TPCHSchema.lineitemSchema().getColumns().get(index[0]).toString(), new Integer[]{1,2});
         Object2IntMap dictMap = ParquetWriterHelper.buildGlobalDict(input,index,schema,order);
-        System.out.println(dictMap);
+        //System.out.println(dictMap);
         EncContext.globalDict.get().put(TPCHSchema.lineitemSchema().getColumns().get(index[0]).toString(), dictMap);
 
         //System.out.println(Encoding.valueOf("PLAIN"));
