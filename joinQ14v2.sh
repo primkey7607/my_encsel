@@ -2,7 +2,7 @@
 # Chunwei Liu
 # RLE BIT_PACKED 
 BASEDIR=$(pwd)
-for i in 0.1 .5 1 1.5 2; do
+for i in 1 2; do
         cd ~/tpch-generator/dbgen/
         ./dbgen -f -s $i
         echo "scale:$i"
