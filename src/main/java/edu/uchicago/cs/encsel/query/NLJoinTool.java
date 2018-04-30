@@ -79,7 +79,7 @@ public class NLJoinTool {
             usertime = usertime + profiler.usersum();
             System.out.println(String.format("%s,%d,%d,%d", "round"+i, profiler.wcsum(), profiler.cpusum(),profiler.usersum()));
         }
-        System.out.println(String.format("%s,%d,%d,%d", "Hashjoin", clocktime / repeat, cputime / repeat, usertime / repeat));
+        System.out.println(String.format("%s,%d,%d,%d", "BNLjoin", clocktime / repeat, cputime / repeat, usertime / repeat));
     }
 }
 

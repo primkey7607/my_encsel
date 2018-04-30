@@ -101,7 +101,7 @@ class HashJoin extends Join {
           hashRecorder.start()
           hashRowReaders.foreach(reader => {
             if (reader.equals(hashKeyReader)){
-               reader.writeCurrentValueToConverter()
+               //reader.writeCurrentValueToConverter()
                //skipped = true
             }else{
                reader.writeCurrentValueToConverter()
