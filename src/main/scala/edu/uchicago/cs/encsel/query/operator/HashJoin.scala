@@ -57,7 +57,8 @@ class HashJoin extends Join {
 
       override def processRowGroup(version: VersionParser.ParsedVersion, meta: BlockMetaData, rowGroup: PageReadStore) = {
         val hashRowReaders = hashProjectSchema.getColumns.map(col => new ColumnReaderImpl(col, rowGroup.getPageReader(col),
-          hashRecorder.getConverter(col.getPath).asPrimitiveConverter(), version))
+          /*hashRecorder.getConverter(col.getPath).asPrimitiveConverter()*/
+          new MyConverter(hashSchema.getType(joinKey._1).asPrimitiveType()), version))
 
         val hashIndex = hashProject.indexOf(joinKey._1)
 
@@ -75,22 +76,31 @@ class HashJoin extends Join {
         // Build hash table
         var skipped = false
         var skippedOnce = false
-        for (i <- 0L until rowGroup.getRowCount) {
-         
+        var count = 0
+        println(rowGroup.getRowCount)
+        for (i <- 0L until rowGroup.getRowCount-1) {
+          /*if (i > 262145){        
+            println("%d junk", i)
+            continue
+          }*/
           //val hashKey = DataUtils.readValue(hashKeyReader)
           //val tmp2 = hashKeyReader.readEncodedValue(hashKeyReader.getDescriptor())
           var hashKey = -1
           if (skipped){
-            if (!skippedOnce){
+            /*if (!skippedOnce){
               hashKey = 1
               skipped = false
               skippedOnce = true
-            }else {
+            }else {*/
               hashKey = hashKeyReader.getDictId()
-            }
+           // }
           }else{
             hashKey = hashKeyReader.getDictId()
           }
+          if (count != hashKey) {
+             println(s"Expected $count, received $hashKey")
+          }
+          println(count)
           println(hashKey) 
           //hashKeyReader.consume()
           //val tmp = hashKeyReader.getCurrentValueDictionaryID()
@@ -109,7 +119,8 @@ class HashJoin extends Join {
             }
           })
           hashRecorder.end()
-
+          count = count + 1
+          
         }
 
       }

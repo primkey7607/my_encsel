@@ -335,9 +335,14 @@ public class ColumnReaderImpl implements ColumnReader {
   }
 
   public int getDictId(){
-    return dataColumn.readValueDictionaryId();
+    System.out.printf("from getDictid: readValues: %d\n", readValues);
+    System.out.printf("from getDictid: pageValueCount: %d\n", pageValueCount);
+    //return dataColumn.readValueDictionaryId();
+    //return dataColumn.readValueDictionaryId();
     //binding.read();
-    //return binding.getDictionaryId();
+    readValue();
+    consume();
+    return binding.getDictionaryId();
   }
 
   /**
@@ -385,7 +390,7 @@ public class ColumnReaderImpl implements ColumnReader {
    */
   @Override
   public void writeCurrentValueToConverter() {
-    readValue();
+    //readValue();
     this.binding.writeValue();
   }
 
@@ -610,8 +615,10 @@ public class ColumnReaderImpl implements ColumnReader {
     } else {
       this.dataColumn = dataEncoding.getValuesReader(path, VALUES);
     }
+    System.out.println(dataEncoding.usesDictionary());
+    System.out.println(converter.hasDictionarySupport());
     if (dataEncoding.usesDictionary() && converter.hasDictionarySupport()) {
-      //System.out.println("use dictionary value reader");
+      System.out.println("use dictionary value reader");
       bindToDictionary(dictionary);
     } else {
       //System.out.println("do not use dictionary value reader");
