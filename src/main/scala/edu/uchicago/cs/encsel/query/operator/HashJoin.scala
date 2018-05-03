@@ -71,11 +71,11 @@ class HashJoin extends Join {
           }
         }
         // Build hash table
-        var skipped = false
-        var skippedOnce = false
+        /*var skipped = false
+        var skippedOnce = false*/
         for (i <- 0L until rowGroup.getRowCount) {
-          var hashKey :Any = -1
-          if (skipped){
+          //var hashKey :Any = -1
+          /*if (skipped){
             if (!skippedOnce){
               hashKey = DataUtils.readValue(hashKeyReader)
               skipped = false
@@ -85,17 +85,18 @@ class HashJoin extends Join {
             }
           }else{
               hashKey = DataUtils.readValue(hashKeyReader)
-          }
+          }*/
           //println(hashKey)
           //println(hashKeyReader.getCurrentValueDictionaryID)
+          val hashKey = DataUtils.readValue(hashKeyReader)
 
           hashtable.put(hashKey, hashRecorder.getCurrentRecord)
           hashRecorder.start()
           hashRowReaders.foreach(reader => {
-            if (reader.equals(hashKeyReader)){
+            if (reader.getCurrentDefinitionLevel == reader.getDescriptor.getMaxDefinitionLevel){
               reader.writeCurrentValueToConverter()
               reader.consume()
-              skipped = true
+              //skipped = true
             }else{
               reader.writeCurrentValueToConverter()
               reader.consume()
