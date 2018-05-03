@@ -2,15 +2,15 @@
 # Chunwei Liu
 # RLE BIT_PACKED 
 BASEDIR=$(pwd)
-for i in 2 5 10 15 20; do
+for i in 1 2 3 4 5; do
         cd ~/tpch-generator/dbgen/
         ./dbgen -f -s $i
         echo "scale:$i"
-        for p_key in DICT PLAIN; do
-                for l_key in DICT PLAIN; do
-                        echo "${p_key},${l_key} part.0 lineitem.1"
+        for p_key in DICT; do
+                for l_key in DICT; do
+                        echo "${p_key},${l_key} order.4 lineitem.10"
                         cd ~/my_encsel/
-                        java -cp target/enc-selector-0.0.1-SNAPSHOT.jar:target/enc-selector-0.0.1-SNAPSHOT-jar-with-dependencies.jar edu.uchicago.cs.encsel.query.GlobalJoinFileProducer $p_key $l_key UNCOMPRESSED
+                        java -cp target/enc-selector-0.0.1-SNAPSHOT.jar:target/enc-selector-0.0.1-SNAPSHOT-jar-with-dependencies.jar edu.uchicago.cs.encsel.query.MyJoinFileProducer $p_key $l_key UNCOMPRESSED
                         java -cp target/enc-selector-0.0.1-SNAPSHOT.jar:target/enc-selector-0.0.1-SNAPSHOT-jar-with-dependencies.jar edu.uchicago.cs.encsel.query.HashJoinTool
                         #cd $BASEDIR
                 done
