@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import edu.uchicago.cs.encsel.parquet.EncContext;
+import edu.uchicago.cs.encsel.query.MyConverter;
 import org.apache.parquet.CorruptDeltaByteArrays;
 import org.apache.parquet.VersionParser.ParsedVersion;
 import org.apache.parquet.bytes.BytesInput;
@@ -147,6 +148,8 @@ public class ColumnReaderImpl implements ColumnReader {
   private IntIterator definitionLevelColumn;
   protected ValuesReader dataColumn;
   private Encoding currentEncoding;
+  /* ADDED VARIABLES */
+  private boolean isJoinKey = false;
 
   private int repetitionLevel;
   private int definitionLevel;
@@ -166,6 +169,19 @@ public class ColumnReaderImpl implements ColumnReader {
   // TODO: rework that
   private boolean valueRead;
 
+  /*ADDED FUNCTIONS */
+  public boolean getIJK(){
+    return isJoinKey;
+  }
+  
+  public void setIJK(boolean b){
+    isJoinKey = b;
+    if (converter instanceof MyConverter){
+       ((MyConverter)converter).setIJK(b);
+    }
+  }
+  /*END ADDED FUNCTIONS */
+
   private void bindToDictionary(final Dictionary dictionary) {
     binding =
         new Binding() {
@@ -180,7 +196,11 @@ public class ColumnReaderImpl implements ColumnReader {
           }
           void writeValue() {
             //System.out.println(dictionaryId);
-            converter.addInt(dictionaryId);
+            if (isJoinKey){
+              converter.addInt(dictionaryId);
+            }else {
+              converter.addValueFromDictionary(dictionaryId);
+            }
           }
           public int getInteger() {
             return dictionary.decodeToInt(dictionaryId);
@@ -259,7 +279,7 @@ public class ColumnReaderImpl implements ColumnReader {
             return current;
           }
           void writeValue() {
-            System.out.println(current);
+            //System.out.println(current);
             converter.addInt(current);
           }
         };
@@ -610,8 +630,8 @@ public class ColumnReaderImpl implements ColumnReader {
     } else {
       this.dataColumn = dataEncoding.getValuesReader(path, VALUES);
     }
-    //if (dataEncoding.usesDictionary() && converter.hasDictionarySupport()) {
-    if (dataEncoding.usesDictionary()) {
+    if (dataEncoding.usesDictionary() && converter.hasDictionarySupport()) {
+    //if (dataEncoding.usesDictionary()) {
       //System.out.println("use dictionary value reader");
       bindToDictionary(dictionary);
     } else {

@@ -40,6 +40,8 @@ object DataUtils {
   }
 
   def writeValue(target: PrimitiveConverter, data: Any): Unit = {
+    println(target)
+    println(data)
     if (target.hasDictionarySupport) {
       target.addValueFromDictionary(data.asInstanceOf[Int])
     } else {

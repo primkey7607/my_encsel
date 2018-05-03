@@ -56,7 +56,8 @@ class HashJoin extends Join {
 
       override def processRowGroup(version: VersionParser.ParsedVersion, meta: BlockMetaData, rowGroup: PageReadStore) = {
         val hashRowReaders = hashProjectSchema.getColumns.map(col => new ColumnReaderImpl(col, rowGroup.getPageReader(col),
-          hashRecorder.getConverter(col.getPath).asPrimitiveConverter(), version))
+          /*hashRecorder.getConverter(col.getPath).asPrimitiveConverter()*/
+          new MyConverter(hashSchema.getType(joinKey._1).asPrimitiveType()), version))
 
         val hashIndex = hashProject.indexOf(joinKey._1)
 
@@ -64,12 +65,15 @@ class HashJoin extends Join {
           case -1 => {
             val hashKeyCol = hashSchema.getColumns()(joinKey._1)
             new ColumnReaderImpl(hashKeyCol, rowGroup.getPageReader(hashKeyCol),
-              new PipePrimitiveConverter(hashSchema.getType(joinKey._1).asPrimitiveType()), version)
+              new MyConverter(hashSchema.getType(joinKey._1).asPrimitiveType()), version)
           }
           case i => {
             hashRowReaders(i)
           }
         }
+        
+        hashKeyReader.setIJK(true)
+       
         // Build hash table
         for (i <- 0L until rowGroup.getRowCount) {
           //val hashKey = DataUtils.readValue(hashKeyReader)
@@ -102,7 +106,8 @@ class HashJoin extends Join {
         // As an assumption, the probe readers will not contain hash key as if the key is included in the result,
         // it will be maintained in the hash table, not here
         val hashKeyReader = new ColumnReaderImpl(hashKeyCol, rowGroup.getPageReader(hashKeyCol),
-          new PipePrimitiveConverter(probeSchema.getType(joinKey._2).asPrimitiveType()), version)
+          /*new PipePrimitiveConverter(probeSchema.getType(joinKey._2).asPrimitiveType())*/
+          new MyConverter(probeSchema.getType(joinKey._2).asPrimitiveType()), version)
         // Build bitmap
         val bitmap = new RoaringBitmap()
 
