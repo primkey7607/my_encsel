@@ -115,7 +115,7 @@ public class ParquetReaderHelper {
             switch (col.getType()) {
                 case BINARY:
                     dictionaryContent = new Object2IntLinkedOpenHashMap<Binary>();
-                    PlainValuesWriter dictionaryEncoder = new PlainValuesWriter(dictValues.length, parquetProperties.getDictionaryPageSizeThreshold(), parquetProperties.getAllocator());
+                    PlainValuesWriter dictionaryEncoder = new PlainValuesWriter(dictValues.length, /*parquetProperties.getDictionaryPageSizeThreshold()*/ 400000000, parquetProperties.getAllocator());
                     for (int i = 0; i < dictValues.length; i++) {
                         Binary entry = Binary.fromString(dictValues[i]);
                         dictionaryEncoder.writeBytes(entry);
