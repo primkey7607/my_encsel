@@ -179,7 +179,8 @@ public class ColumnReaderImpl implements ColumnReader {
             return dictionaryId;
           }
           void writeValue() {
-            converter.addValueFromDictionary(dictionaryId);
+            //converter.addValueFromDictionary(dictionaryId);
+            converter.addInt(dictionaryId);
           }
           public int getInteger() {
             return dictionary.decodeToInt(dictionaryId);
@@ -335,7 +336,8 @@ public class ColumnReaderImpl implements ColumnReader {
   }
 
   public int getDictId(){
-    return dataColumn.readValueDictionaryId();
+    //return dataColumn.readValueDictionaryId();
+    return binding.getDictionaryId();
   }
 
   /**
@@ -608,7 +610,7 @@ public class ColumnReaderImpl implements ColumnReader {
     } else {
       this.dataColumn = dataEncoding.getValuesReader(path, VALUES);
     }
-    if (dataEncoding.usesDictionary() && converter.hasDictionarySupport()) {
+    if (dataEncoding.usesDictionary() /*&& converter.hasDictionarySupport()*/) {
       //System.out.println("use dictionary value reader");
       bindToDictionary(dictionary);
     } else {

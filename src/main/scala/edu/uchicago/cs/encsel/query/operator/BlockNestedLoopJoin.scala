@@ -86,7 +86,8 @@ class BlockNestedLoopJoin(val numBlock: Int) extends Join {
 
         val placements = new ArrayBuffer[Int]()
         for (i <- 0L until rowGroup.getRowCount) {
-          val keyValue = DataUtils.readValue(keyReader)
+          //val keyValue = DataUtils.readValue(keyReader)
+          val keyValue = keyReader.getCurrentValueDictionaryID
           val keyIndex = (keyValue.hashCode() % numBlock).toInt
           placements += keyIndex
           keyConverter.setNext(leftKeys(keyIndex).getConverter(0).asPrimitiveConverter())
@@ -129,7 +130,8 @@ class BlockNestedLoopJoin(val numBlock: Int) extends Join {
 
         val placements = new ArrayBuffer[Int]()
         for (i <- 0L until rowGroup.getRowCount) {
-          val keyValue = DataUtils.readValue(keyReader)
+          //val keyValue = DataUtils.readValue(keyReader)
+          val keyValue = keyReader.getCurrentValueDictionaryID
           val keyIndex = (keyValue.hashCode() % numBlock).toInt
           placements += keyIndex
           keyConverter.setNext(rightKeys(keyIndex).getConverter(0).asPrimitiveConverter())
