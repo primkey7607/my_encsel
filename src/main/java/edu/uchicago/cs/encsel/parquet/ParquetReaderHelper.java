@@ -112,10 +112,11 @@ public class ParquetReaderHelper {
         if (dictValues.length > 0) {
             // return a dictionary only if we actually used it
             Object2IntMap dictionaryContent = null;
+            //System.out.printf("Size of Dictionary after replication: %d", dictValues.length);
             switch (col.getType()) {
                 case BINARY:
                     dictionaryContent = new Object2IntLinkedOpenHashMap<Binary>();
-                    PlainValuesWriter dictionaryEncoder = new PlainValuesWriter(dictValues.length, /*parquetProperties.getDictionaryPageSizeThreshold()*/ 400000000, parquetProperties.getAllocator());
+                    PlainValuesWriter dictionaryEncoder = new PlainValuesWriter(dictValues.length, parquetProperties.getDictionaryPageSizeThreshold(), parquetProperties.getAllocator());
                     for (int i = 0; i < dictValues.length; i++) {
                         Binary entry = Binary.fromString(dictValues[i]);
                         dictionaryEncoder.writeBytes(entry);
