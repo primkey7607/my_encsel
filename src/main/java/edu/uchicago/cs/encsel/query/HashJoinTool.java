@@ -49,18 +49,18 @@ public class HashJoinTool {
         System.out.println("part intBitLength: "+ bitLength +" part intBound: "+intbound);
 
 
-        EncContext.context.get().put(TPCHSchema.lineitemSchema().getColumns().get(1).toString(), new Object[]{bitLength,intbound});
-        EncContext.context.get().put(TPCHSchema.partSchema().getColumns().get(0).toString(), new Object[]{pbl,pib});
+        EncContext.context.get().put(TPCHSchema.lineitemSchema().getColumns().get(5).toString(), new Object[]{bitLength,intbound});
+        EncContext.context.get().put(TPCHSchema.partSchema().getColumns().get(7).toString(), new Object[]{pbl,pib});
 
         int repeat = 10;
         long clocktime = 0L;
         long cputime = 0L;
         long usertime = 0L;
-        Tuple2<Object,Object> joinindex = new Tuple2<Object,Object>(0, 1);
+        Tuple2<Object,Object> joinindex = new Tuple2<Object,Object>(7, 5);
         for (int i = 0; i < repeat; i++) {
             Profiler profiler = new Profiler();
             profiler.mark();
-            System.out.println(EncContext.context.get().get(TPCHSchema.partSchema().getColumns().get(0).toString())[1]);
+            System.out.println(EncContext.context.get().get(TPCHSchema.partSchema().getColumns().get(7).toString())[1]);
             TempTable result = new HashJoin().join(new File(part+".parquet").toURI(), TPCHSchema.partSchema(),
                     new File(lineitem+".parquet").toURI(), TPCHSchema.lineitemSchema(),
                     joinindex, new int[]{0}, new int[]{5, 6});

@@ -165,6 +165,8 @@ public class ColumnReaderImpl implements ColumnReader {
   // this is needed because we will attempt to read the value twice when filtering
   // TODO: rework that
   private boolean valueRead;
+  private boolean globalDict = false;
+  private int targerID = -2;
 
   private void bindToDictionary(final Dictionary dictionary) {
     binding =
@@ -179,7 +181,8 @@ public class ColumnReaderImpl implements ColumnReader {
             return dictionaryId;
           }
           void writeValue() {
-            converter.addValueFromDictionary(dictionaryId);
+            //System.out.println(dictionaryId);
+            converter.addInt(dictionaryId);
           }
           public int getInteger() {
             return dictionary.decodeToInt(dictionaryId);
@@ -258,6 +261,7 @@ public class ColumnReaderImpl implements ColumnReader {
             return current;
           }
           void writeValue() {
+            System.out.println(current);
             converter.addInt(current);
           }
         };
@@ -334,10 +338,6 @@ public class ColumnReaderImpl implements ColumnReader {
     });
   }
 
-  public int getDictId(){
-    return dataColumn.readValueDictionaryId();
-  }
-
   /**
    * creates a reader for triplets
    * @param path the descriptor for the corresponding column
@@ -349,8 +349,10 @@ public class ColumnReaderImpl implements ColumnReader {
     this.converter = checkNotNull(converter, "converter");
     this.writerVersion = writerVersion;
     DictionaryPage dictionaryPage = null;
-    if ( EncContext.dictPage.get().containsKey(path.toString()))
+    if ( EncContext.dictPage.get().containsKey(path.toString())) {
+      this.globalDict = true;
       dictionaryPage = EncContext.dictPage.get().get(path.toString());
+    }
     else
       dictionaryPage = pageReader.readDictionaryPage();
 
@@ -371,6 +373,144 @@ public class ColumnReaderImpl implements ColumnReader {
       throw new ParquetDecodingException("totalValueCount '" + totalValueCount + "' <= 0");
     }
     consume();
+  }
+
+  public int retrieveDictID(Binary key, boolean order) {
+    Binary ob = key;
+    int start = 0;
+    int end = dictionary.getMaxId();
+    if (order) {
+      int mid;
+      while (start <= end) {
+        mid = (end - start) / 2 + start;
+        if (dictionary.decodeToBinary(mid).compareTo(ob) > 0) {
+          end = mid - 1;
+        } else if (dictionary.decodeToBinary(mid).compareTo(ob) < 0) {
+          start = mid + 1;
+        } else {
+          return mid;
+        }
+      }
+    }
+    else{
+      while (start <= end) {
+        if (dictionary.decodeToBinary(start).equals(ob)){
+          //System.out.println(start + "" + dictionary.decodeToBinary(start).toStringUsingUTF8());
+          return start;
+        }
+        start++;
+      }
+    }
+    return -1;
+  }
+
+  public int retrieveDictID(int key, boolean order) {
+    int ob = key;
+    int start = 0;
+    int end = dictionary.getMaxId();
+    if (order) {
+      int mid;
+      while (start <= end) {
+        mid = (end - start) / 2 + start;
+        if (dictionary.decodeToInt(mid) > ob) {
+          end = mid - 1;
+        } else if (dictionary.decodeToInt(mid) < ob) {
+          start = mid + 1;
+        } else {
+          return mid;
+        }
+      }
+    }
+    else{
+      while (start <= end) {
+        if (dictionary.decodeToInt(start) == ob)
+          return start;
+        start++;
+      }
+    }
+    return -1;
+  }
+
+  public int retrieveDictID(float key, boolean order) {
+    float ob = key;
+    int start = 0;
+    int end = dictionary.getMaxId();
+    if (order) {
+      int mid;
+      while (start <= end) {
+        mid = (end - start) / 2 + start;
+        if (Float.compare(dictionary.decodeToFloat(mid), ob)>0) {
+          end = mid - 1;
+        } else if (Float.compare(dictionary.decodeToFloat(mid), ob)<0) {
+          start = mid + 1;
+        } else {
+          return mid;
+        }
+      }
+    }
+    else{
+      while (start <= end) {
+        if (Float.compare(dictionary.decodeToFloat(start), ob)==0)
+          return start;
+        start++;
+      }
+    }
+    return -1;
+  }
+
+  public int retrieveDictID(double key, boolean order) {
+    double ob = key;
+    int start = 0;
+    int end = dictionary.getMaxId();
+    if (order) {
+      int mid;
+      while (start <= end) {
+        mid = (end - start) / 2 + start;
+        if (Double.compare(dictionary.decodeToDouble(mid), ob)>0) {
+          end = mid - 1;
+        } else if (Double.compare(dictionary.decodeToDouble(mid), ob)<0) {
+          start = mid + 1;
+        } else {
+          return mid;
+        }
+      }
+    }
+    else{
+      while (start <= end) {
+        if (Double.compare(dictionary.decodeToDouble(start), ob)==0){
+          return start;
+        }
+        start++;
+      }
+    }
+    return -1;
+  }
+
+  public int retrieveDictID(long key, boolean order) {
+    long ob = key;
+    int start = 0;
+    int end = dictionary.getMaxId();
+    if (order) {
+      int mid;
+      while (start <= end) {
+        mid = (end - start) / 2 + start;
+        if (dictionary.decodeToLong(mid) > ob) {
+          end = mid - 1;
+        } else if (dictionary.decodeToLong(mid) < ob) {
+          start = mid + 1;
+        } else {
+          return mid;
+        }
+      }
+    }
+    else{
+      while (start <= end) {
+        if (dictionary.decodeToLong(start) == ob)
+          return start;
+        start++;
+      }
+    }
+    return -1;
   }
 
   private boolean isFullyConsumed() {
@@ -608,7 +748,8 @@ public class ColumnReaderImpl implements ColumnReader {
     } else {
       this.dataColumn = dataEncoding.getValuesReader(path, VALUES);
     }
-    if (dataEncoding.usesDictionary() && converter.hasDictionarySupport()) {
+    //if (dataEncoding.usesDictionary() && converter.hasDictionarySupport()) {
+    if (dataEncoding.usesDictionary()) {
       //System.out.println("use dictionary value reader");
       bindToDictionary(dictionary);
     } else {

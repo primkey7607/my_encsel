@@ -52,7 +52,7 @@ import static org.apache.parquet.filter2.predicate.FilterApi.*;
 
 public class ShipdataFilter {
 
-    static int code = 0;
+    static int code = -2;
     static Binary date1993 = Binary.fromString("1992-01-02");
     static Binary date1994 = Binary.fromString("1992-01-03");
     static Boolean pred(int value){
@@ -62,21 +62,25 @@ public class ShipdataFilter {
     static Boolean discount_pred(double value) {return (value>=0.05)&&(value<=0.07); }
     static Boolean shipdate_pred(Binary value) {return (date1993.compareTo(value)==0)||(date1993.compareTo(value) + date1994.compareTo(value) == 0); }
     static Boolean hardShipdate_pred(int value) {return  (value>=0)&&(value<code); }
+    static int totalcount = 0;
+    static int selected = 0;
 
     public static void main(String[] args) throws IOException, VersionParser.VersionParseException {
-        args = new String[]{"1","1992-01-03", "false", "false"};
+        //args = new String[]{"false","1992-01-03", "false", "false"};
         if (args.length == 0) {
-            System.out.println("ShipdataFilter code value pageskipping hardmode");
+            System.out.println("ShipdataFilter order value pageskipping hardmode");
             return;
         }
-        code = Integer.parseInt(args[0]);
+        //code = Integer.parseInt(args[0]);
+        String order = args[0];
+        Boolean ordered = (order.equalsIgnoreCase("true") || order.equals("1"));
         date1994 = Binary.fromString(args[1]);
         String skip = args[2];
         String hard = args[3];
         Boolean pageSkipping = (skip.equalsIgnoreCase("true") || skip.equals("1"));
         Boolean hardmode = (hard.equalsIgnoreCase("true") || hard.equals("1"));
 
-        System.out.println(date1994.toStringUsingUTF8()+":"+code+", skipmode:"+skip+", hardmode:"+hard);
+        System.out.println(date1994.toStringUsingUTF8()+":"+order+", skipmode:"+skip+", hardmode:"+hard);
 
         ColumnDescriptor l_quantity = TPCHSchema.lineitemSchema().getColumns().get(4);
         String quantity_str = Strings.join(l_quantity.getPath(), ".");
@@ -110,6 +114,7 @@ public class ShipdataFilter {
         long cputime = 0L;
         long usertime = 0L;
         for (int i = 0; i < repeat; i++) {
+            code = -2;
             ProfileBean prof = ParquetReaderHelper.filterProfile(new File(lineitem+".parquet").toURI(), rowGroup_filter, new EncReaderProcessor() {
 
                 @Override
@@ -136,6 +141,11 @@ public class ShipdataFilter {
                     }
 
                     if(hardmode){
+                        if (!(EncContext.globalDict.get().containsKey(l_shipdate.toString()))||(code<0))
+                        {
+                            code = shipdateReader.retrieveDictID(date1994,ordered);
+                            System.out.println(code);
+                        }
                         while(shipdateReader.getReadValue()<rowGroup.getRowCount()) {
                             //System.out.println("getReadValue:"+shipdateReader.getReadValue());
                             //System.out.println("getPageValueCount:"+shipdateReader.getPageValueCount());
@@ -144,7 +154,7 @@ public class ShipdataFilter {
                             for (int j = 0; j<pageValueCount; j++){
                                 //System.out.println("row number:" + shipdateReader.getReadValue());
                                 //bitmap.set(base++, shipdate_pred(shipdateReader.getBinary()));
-                                bitmap.set(base++, hardShipdate_pred(shipdateReader.getDictId()));
+                                bitmap.set(base++, hardShipdate_pred(shipdateReader.getCurrentValueDictionaryID()));
                                 shipdateReader.consume();
                             }
 
@@ -170,7 +180,7 @@ public class ShipdataFilter {
                         return;
                     }
 
-                    int count = 0;
+                    //int count = 0;
                     //Object2IntMap shipdataDict = EncContext.globalDict.get().get(l_shipdate.toString());
                     //System.out.println("Dictioanry key value:"+ shipdataDict.toString());
                     //System.out.println("1993-01-01:" + shipdataDict.get(date1993) + " 1994-01-01: " + shipdataDict.get(date1994));
@@ -185,6 +195,85 @@ public class ShipdataFilter {
         }
         System.out.println(String.format("%s,%d,%d,%d,%d,%d", "ScanOnheap", clocktime / repeat, cputime / repeat, usertime / repeat, StatisticsPageFilter.getPAGECOUNT() / repeat,StatisticsPageFilter.getPAGESKIPPED() / repeat));
 
+        if (!pageSkipping && !hardmode && !ordered){
+            code = -2;
+            ProfileBean selectProf = ParquetReaderHelper.filterProfile(new File(lineitem+".parquet").toURI(), rowGroup_filter, new EncReaderProcessor() {
+
+                @Override
+                public void processRowGroup(VersionParser.ParsedVersion version,
+                                            BlockMetaData meta, PageReadStore rowGroup) {
+                    if(pageSkipping){
+                        ParquetFileReader.setColFilter(rowGroup, l_shipdate, shipdate_filter);
+                    }
+                    RoaringBitmap bitmap = new RoaringBitmap();
+                    //System.out.println("rowgroup count: "+rowGroup.getRowCount());
+                    ColumnReaderImpl shipdateReader = new ColumnReaderImpl(l_shipdate, rowGroup.getPageReader(l_shipdate), new NonePrimitiveConverter(), version);
+                    /*for (long j = 0;  j<rowGroup.getRowCount(); j++) {
+                        bitmap.set(j, shipdate_pred(shipdateReader.getBinary()));
+                        //bitmap.set(j, hardShipdate_pred(shipdateReader.getDictId()));
+                        //if (quantity_pred(value))
+                        //System.out.println("row number:" + j + " value: " + colReader.getInteger());
+                        shipdateReader.consume();
+                    }*/
+
+
+                    if(shipdateReader.getReadValue()>=rowGroup.getRowCount()) {
+                        //System.out.println("End detected!");
+                        return;
+                    }
+
+                    if(hardmode){
+                        if (!(EncContext.globalDict.get().containsKey(l_shipdate.toString()))||(code<0))
+                        {
+                            code = shipdateReader.retrieveDictID(date1994,ordered);
+                            System.out.println(code);
+                        }
+                        while(shipdateReader.getReadValue()<rowGroup.getRowCount()) {
+                            //System.out.println("getReadValue:"+shipdateReader.getReadValue());
+                            //System.out.println("getPageValueCount:"+shipdateReader.getPageValueCount());
+                            long pageValueCount = shipdateReader.getPageValueCount();
+                            long base = shipdateReader.getReadValue();
+                            for (int j = 0; j<pageValueCount; j++){
+                                //System.out.println("row number:" + shipdateReader.getReadValue());
+                                //bitmap.set(base++, shipdate_pred(shipdateReader.getBinary()));
+                                bitmap.set(base++, hardShipdate_pred(shipdateReader.getCurrentValueDictionaryID()));
+                                shipdateReader.consume();
+                            }
+
+                        }
+                    }
+                    else{
+                        while(shipdateReader.getReadValue()<rowGroup.getRowCount()) {
+                            //System.out.println("getReadValue:"+shipdateReader.getReadValue());
+                            //System.out.println("getPageValueCount:"+shipdateReader.getPageValueCount());
+                            long pageValueCount = shipdateReader.getPageValueCount();
+                            long base = shipdateReader.getReadValue();
+                            for (int j = 0; j<pageValueCount; j++){
+                                //System.out.println("row number:" + shipdateReader.getReadValue());
+                                totalcount++;
+                                if (shipdate_pred(shipdateReader.getBinary()))
+                                    selected++;
+                                bitmap.set(base++, shipdate_pred(shipdateReader.getBinary()));
+                                //bitmap.set(base++, hardShipdate_pred(shipdateReader.getDictId()));
+                                shipdateReader.consume();
+                            }
+
+                        }
+                    }
+                    if(shipdateReader.getReadValue()>=rowGroup.getRowCount()) {
+                        //System.out.println("End detected!");
+                        return;
+                    }
+
+                    //int count = 0;
+                    //Object2IntMap shipdataDict = EncContext.globalDict.get().get(l_shipdate.toString());
+                    //System.out.println("Dictioanry key value:"+ shipdataDict.toString());
+                    //System.out.println("1993-01-01:" + shipdataDict.get(date1993) + " 1994-01-01: " + shipdataDict.get(date1994));
+
+                }
+            });
+            System.out.println(String.format("%s,%d,%d,%d,%d,%d,%f", "last round", selectProf.wallclock(), selectProf.cpu(), selectProf.user(), selected, totalcount, 1.0*selected/totalcount));
+        }
     }
 }
 

@@ -37,10 +37,10 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 
-public class GlobalJoinFileProducer {
+public class DblJoinFileProducer {
 
     public static void main(String[] args) throws IOException, VersionParser.VersionParseException {
-        //args = new String[]{"DICT","DICT", "UNCOMPRESSED"};
+        //args = new String[]{"PLAIN_DICTIONARY","PLAIN_DICTIONARY", "UNCOMPRESSED"};
         if (args.length == 0) {
             System.out.println("JoinFileProducer PPencoding LPencoding Compression");
             return;
@@ -49,40 +49,31 @@ public class GlobalJoinFileProducer {
         String LPencoding = args[1];
         String comp = args[2];
         String lineitem = "../tpch-generator/dbgen/lineitem";
-        String part = "../tpch-generator/dbgen/part";
-        URI[] input = {new File(lineitem+".tbl").toURI(), new File(part+".tbl").toURI()};
-        int[] index = {1,0};
+        String orders = "../tpch-generator/dbgen/part";
+        URI[] input = {new File(lineitem+".tbl").toURI(), new File(orders+".tbl").toURI()};
+        int[] index = {5,7};
         MessageType[] schema ={TPCHSchema.lineitemSchema(), TPCHSchema.partSchema()};
         Boolean order = true;
 
-        int intbound = ParquetWriterHelper.scanIntMaxInTab(new File(lineitem+".tbl").toURI(), 1);
-        int bitLength = 32 - Integer.numberOfLeadingZeros(intbound);
-        System.out.println("lineitem intBitLength: "+ bitLength +" lineitem intBound: "+intbound);
-
-        EncContext.encoding.get().put(TPCHSchema.lineitemSchema().getColumns().get(1).toString(), IntEncoding.valueOf(LPencoding).parquetEncoding());
-        EncContext.context.get().put(TPCHSchema.lineitemSchema().getColumns().get(1).toString(), new Integer[]{bitLength,intbound});
+        EncContext.encoding.get().put(TPCHSchema.lineitemSchema().getColumns().get(index[0]).toString(), Encoding.valueOf(PPencoding));
+        EncContext.context.get().put(TPCHSchema.lineitemSchema().getColumns().get(index[0]).toString(), new Integer[]{1,2});
         Object2IntMap dictMap = ParquetWriterHelper.buildGlobalDict(input,index,schema,order,0);
-        //System.out.println(dictMap);
-        EncContext.globalDict.get().put(TPCHSchema.lineitemSchema().getColumns().get(1).toString(), dictMap);
+        System.out.println(dictMap);
+        EncContext.globalDict.get().put(TPCHSchema.lineitemSchema().getColumns().get(index[0]).toString(), dictMap);
 
         //System.out.println(Encoding.valueOf("PLAIN"));
         ParquetWriterHelper.write(new File(lineitem+".tbl").toURI(), TPCHSchema.lineitemSchema(),
                 new File(lineitem+".parquet").toURI(), "\\|", false, comp);
 
 
+        EncContext.encoding.get().put(TPCHSchema.partSchema().getColumns().get(index[1]).toString(), Encoding.valueOf(LPencoding));
+        EncContext.context.get().put(TPCHSchema.partSchema().getColumns().get(index[1]).toString(), new Integer[]{1,2});
+        EncContext.globalDict.get().put(TPCHSchema.partSchema().getColumns().get(index[1]).toString(), dictMap);
 
-        int pib = ParquetWriterHelper.scanIntMaxInTab(new File(part+".tbl").toURI(), 0);
-        int pbl = 32 - Integer.numberOfLeadingZeros(intbound);
-        System.out.println("part intBitLength: "+ bitLength +" part intBound: "+intbound);
-
-        EncContext.encoding.get().put(TPCHSchema.partSchema().getColumns().get(0).toString(), IntEncoding.valueOf(PPencoding).parquetEncoding());
-        EncContext.context.get().put(TPCHSchema.partSchema().getColumns().get(0).toString(), new Integer[]{pbl,pib});
-        EncContext.globalDict.get().put(TPCHSchema.partSchema().getColumns().get(0).toString(), dictMap);
-
-        ParquetWriterHelper.write(new File(part+".tbl").toURI(), TPCHSchema.partSchema(),
-                new File(part+".parquet").toURI(), "\\|", false, comp);
-        long pcolsize = ParquetReaderHelper.getColSize(new File(part+".parquet").toURI(), 0);
-        //System.out.println("part col " + 0 + " size:"+pcolsize);
+        ParquetWriterHelper.write(new File(orders+".tbl").toURI(), TPCHSchema.partSchema(),
+                new File(orders+".parquet").toURI(), "\\|", false, comp);
+        long pcolsize = ParquetReaderHelper.getColSize(new File(orders+".parquet").toURI(), index[1]);
+        //System.out.println("orders col " + 0 + " size:"+pcolsize);
 
     }
 }
