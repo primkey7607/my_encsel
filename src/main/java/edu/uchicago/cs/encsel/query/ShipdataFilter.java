@@ -143,7 +143,8 @@ public class ShipdataFilter {
                     if(hardmode){
                         if (!(EncContext.globalDict.get().containsKey(l_shipdate.toString()))||(code<0))
                         {
-                            code = shipdateReader.retrieveDictID(date1994,ordered);
+                            /*code = shipdateReader.retrieveDictID(date1994,ordered);*/
+                            code = 0;
                             System.out.println(code);
                         }
                         while(shipdateReader.getReadValue()<rowGroup.getRowCount()) {
@@ -225,7 +226,8 @@ public class ShipdataFilter {
                     if(hardmode){
                         if (!(EncContext.globalDict.get().containsKey(l_shipdate.toString()))||(code<0))
                         {
-                            code = shipdateReader.retrieveDictID(date1994,ordered);
+                            //code = shipdateReader.retrieveDictID(date1994,ordered);
+                            code = 0;
                             System.out.println(code);
                         }
                         while(shipdateReader.getReadValue()<rowGroup.getRowCount()) {
