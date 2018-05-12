@@ -41,7 +41,8 @@ object TPCHSchema {
   )
 
   val partSchema = new MessageType("part",
-    new PrimitiveType(Repetition.REQUIRED, PrimitiveTypeName.INT32, "part_key"),
+    //new PrimitiveType(Repetition.REQUIRED, PrimitiveTypeName.INT32, "part_key"),
+    new PrimitiveType(Repetition.REQUIRED, PrimitiveTypeName.DOUBLE, "part_key"),
     new PrimitiveType(Repetition.REQUIRED, PrimitiveTypeName.BINARY, "name"),
     new PrimitiveType(Repetition.REQUIRED, PrimitiveTypeName.BINARY, "mfgr"),
     new PrimitiveType(Repetition.REQUIRED, PrimitiveTypeName.BINARY, "brand"),
@@ -62,7 +63,8 @@ object TPCHSchema {
 
   val lineitemSchema = new MessageType("lineitem",
     new PrimitiveType(Repetition.REQUIRED, PrimitiveTypeName.INT32, "order_key"),
-    new PrimitiveType(Repetition.REQUIRED, PrimitiveTypeName.INT32, "part_key"),
+    new PrimitiveType(Repetition.REQUIRED, PrimitiveTypeName.DOUBLE, "part_key"),
+    //new PrimitiveType(Repetition.REQUIRED, PrimitiveTypeName.INT32, "part_key"),
     new PrimitiveType(Repetition.REQUIRED, PrimitiveTypeName.INT32, "supp_key"),
     new PrimitiveType(Repetition.REQUIRED, PrimitiveTypeName.INT32, "line_number"),
     new PrimitiveType(Repetition.REQUIRED, PrimitiveTypeName.INT32, "quantity"),
