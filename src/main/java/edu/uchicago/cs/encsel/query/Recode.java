@@ -6,16 +6,16 @@ import java.util.HashMap;
 
 import edu.uchicago.cs.encsel.parquet.EncReaderProcessor;
 import edu.uchicago.cs.encsel.parquet.ParquetReaderHelper;
-import edu.uchicago.cs.encsel.query._
 import edu.uchicago.cs.encsel.query.bitmap.RoaringBitmap;
 import edu.uchicago.cs.encsel.query.util.DataUtils;
 import edu.uchicago.cs.encsel.query.util.SchemaUtils;
 
-import org.apache.parquet.VersionParser
-import org.apache.parquet.column.impl.ColumnReaderImpl
-import org.apache.parquet.column.page.PageReadStore
-import org.apache.parquet.hadoop.metadata.BlockMetaData
-import org.apache.parquet.schema.MessageType
+import org.apache.parquet.VersionParser;
+import org.apache.parquet.column.impl.ColumnReaderImpl;
+import org.apache.parquet.column.impl.ColumnReaderImpl2;
+import org.apache.parquet.column.page.PageReadStore;
+import org.apache.parquet.hadoop.metadata.BlockMetaData;
+import org.apache.parquet.schema.MessageType;
 
 public class Recode {
 
@@ -33,11 +33,71 @@ public class Recode {
         this.codes = new ArrayList<>();
     }
 
-    public HashMap<Integer,Integer> createMap(){
+    public HashMap<Integer,Integer> createMap() throws Exception{
         /* Design: Read values using ColumnReader,
          Read codes using ColumnReader2
          Zip the two together and return the resulting hashmap
          */
-        
+        MessageType projected = SchemaUtils.project(schema, col);
+        // Build Hash Table
+        ParquetReaderHelper.read(filepath, new EncReaderProcessor() {
+
+            public void processRowGroup(VersionParser.ParsedVersion version, BlockMetaData meta, PageReadStore rowGroup) {
+                val hashRowReaders = hashProjectSchema.getColumns.map(col => new ColumnReaderImpl(col, rowGroup.getPageReader(col),
+                        hashRecorder.getConverter(col.getPath).asPrimitiveConverter(), version))
+
+                val hashIndex = hashProject.indexOf(joinKey._1)
+
+                val hashKeyReader = hashIndex match {
+                    case -1 => {
+                        val hashKeyCol = hashSchema.getColumns()(joinKey._1)
+                                new ColumnReaderImpl(hashKeyCol, rowGroup.getPageReader(hashKeyCol),
+                                        new PipePrimitiveConverter(hashSchema.getType(joinKey._1).asPrimitiveType()), version)
+                    }
+                    case i => {
+                        hashRowReaders(i)
+                    }
+                }
+                // Build hash table
+        /*var skipped = false
+        var skippedOnce = false*/
+                for (i <- 0L until rowGroup.getRowCount) {
+          /*var hashKey :Any = -1
+          if (skipped){
+            if (!skippedOnce){
+              hashKey = DataUtils.readValue(hashKeyReader)
+              skipped = false
+              skippedOnce = true
+            }else {
+              hashKey = DataUtils.readValue(hashKeyReader)
+            }
+          }else{
+              hashKey = DataUtils.readValue(hashKeyReader)
+          }*/
+
+                    val hashKey = DataUtils.readValue(hashKeyReader)
+                    //println(hashKey)
+                    //println(hashKeyReader.getCurrentValueDictionaryID)
+
+                    hashtable.put(hashKey, hashRecorder.getCurrentRecord)
+                    hashRecorder.start()
+                    hashRowReaders.foreach(reader => {
+                    if (reader.equals(hashKeyReader)){
+                        reader.writeCurrentValueToConverter()
+                        reader.consume()
+                        //skipped = true
+                    }else{
+                        reader.writeCurrentValueToConverter()
+                        reader.consume()
+                    }
+          })
+                    hashRecorder.end()
+
+                }
+            }
+        })
+
+        throw new Exception("TODO");
+
     }
 }
