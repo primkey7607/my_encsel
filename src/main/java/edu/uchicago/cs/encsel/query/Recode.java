@@ -26,6 +26,7 @@ public class Recode {
     private int[] col;
     private ArrayList<Integer> values;
     private ArrayList<Integer> codes;
+    private RowTempTable hashRecorder;
 
     public Recode(String filepath, MessageType schema, int[] col){
         this.filepath = filepath;
@@ -53,13 +54,13 @@ public class Recode {
          Zip the two together and return the resulting hashmap
          */
         MessageType projected = SchemaUtils.project(schema, col);
+        this.hashRecorder = new RowTempTable(projected);
 
         // Build Hash Table
         ParquetReaderHelper.read(filepath, new EncReaderProcessor() {
 
             public void processRowGroup(VersionParser.ParsedVersion version, BlockMetaData meta, PageReadStore rowGroup) {
-                val hashRowReaders = projected.getColumns().map(col => new ColumnReaderImpl(col, rowGroup.getPageReader(col),
-                        hashRecorder.getConverter(col.getPath).asPrimitiveConverter(), version))
+                ArrayList<ColumnReaderImpl> hashRowReaders = map(version, rowGroup, projected.getColumns());
 
                 val hashIndex = hashProject.indexOf(joinKey._1)
 
