@@ -48,7 +48,7 @@ public class Recode {
         return result;
     }
 
-    public HashMap<Integer,Integer> createMap() throws Exception{
+    public HashMap<Integer,Integer> createMap(){
         /* Design: Read values using ColumnReader,
          Read codes using ColumnReader2
          Zip the two together and return the resulting hashmap
@@ -63,46 +63,29 @@ public class Recode {
                 ArrayList<ColumnReaderImpl> hashRowReaders = map(version, rowGroup, projected.getColumns());
 
                 ColumnReaderImpl hashKeyReader = hashRowReaders.get(0); //there should only be one element here
-                // Build hash table
-        /*var skipped = false
-        var skippedOnce = false*/
-                for (i <- 0L until rowGroup.getRowCount) {
-          /*var hashKey :Any = -1
-          if (skipped){
-            if (!skippedOnce){
-              hashKey = DataUtils.readValue(hashKeyReader)
-              skipped = false
-              skippedOnce = true
-            }else {
-              hashKey = DataUtils.readValue(hashKeyReader)
-            }
-          }else{
-              hashKey = DataUtils.readValue(hashKeyReader)
-          }*/
+                for (int i = 0; i < rowGroup.getRowCount(); i++) {
+                    int hashKey = DataUtils.readValue(hashKeyReader);
 
-                    val hashKey = DataUtils.readValue(hashKeyReader)
                     //println(hashKey)
                     //println(hashKeyReader.getCurrentValueDictionaryID)
 
-                    hashtable.put(hashKey, hashRecorder.getCurrentRecord)
-                    hashRecorder.start()
-                    hashRowReaders.foreach(reader => {
-                    if (reader.equals(hashKeyReader)){
+                    //hashtable.put(hashKey, hashRecorder.getCurrentRecord)
+                    //hashRecorder.start()
+                    /*if (reader.equals(hashKeyReader)){
                         reader.writeCurrentValueToConverter()
                         reader.consume()
                         //skipped = true
                     }else{
                         reader.writeCurrentValueToConverter()
                         reader.consume()
-                    }
-          })
-                    hashRecorder.end()
+                    }*/
+                    //hashRecorder.end()
 
                 }
             }
-        })
+        });
 
-        throw new Exception("TODO");
+        return new HashMap<>(); //WARNING: dummy return value
 
     }
 }
