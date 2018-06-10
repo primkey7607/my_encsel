@@ -74,7 +74,8 @@ public class Recode {
                         }else{
                             throw new IllegalArgumentException("Expected Integer, received other type");
                         }
-                        System.out.printf("hashKey: %d\n", hashKey );
+                        //System.out.printf("hashKey: %d\n", hashKey ); seems to work
+                        values.add(hashKey);
                         hashKeyReader.consume();
 
                         //println(hashKey)
