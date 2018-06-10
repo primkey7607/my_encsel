@@ -33,8 +33,8 @@ public class RecodeTool {
         EncContext.context.get().put(TPCHSchema.partSchema().getColumns().get(0).toString(), new Object[]{pbl,pib});
         //Just perform "recoding" once, and see what it prints
         Recode r = new Recode(lineitem, TPCHSchema.lineitemSchema(), new int[]{1});
-        HashMap<Integer,Integer> h = r.createMap();
-        System.out.printf("Size of HashMap: %d\n", h.size());
+        //HashMap<Integer,Integer> h = r.createMap();
+        //System.out.printf("Size of HashMap: %d\n", h.size());
         r.makeGlobalDict();
 
     }
