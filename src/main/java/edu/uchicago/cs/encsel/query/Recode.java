@@ -127,8 +127,8 @@ public class Recode {
                     for (int i = 0; i < rowGroup.getRowCount(); i++) {
                         Integer hashKey = hashKeyReader.getCurrentValueDictionaryID();
                         System.out.printf("hashKey: %d\n", hashKey );
-                        //codes.add(hashKey);
-                        //hashKeyReader.consume();
+                        codes.add(hashKey);
+                        hashKeyReader.consume();
 
                         //println(hashKey)
                         //println(hashKeyReader.getCurrentValueDictionaryID)
