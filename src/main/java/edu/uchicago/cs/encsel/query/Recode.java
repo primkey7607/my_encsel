@@ -97,6 +97,8 @@ public class Recode {
 
         }catch (IOException e){
             e.printStackTrace();
+        }catch (VersionParser.VersionParseException e){
+            e.printStackTrace();
         }
 
         return new HashMap<>(); //WARNING: dummy return value
