@@ -3,6 +3,7 @@ package edu.uchicago.cs.encsel.query;
 import edu.uchicago.cs.encsel.parquet.EncContext;
 import edu.uchicago.cs.encsel.parquet.ParquetWriterHelper;
 import edu.uchicago.cs.encsel.query.Recode;
+import edu.uchicago.cs.encsel.query.tpch.TPCHSchema;
 
 import java.io.File;
 import java.util.HashMap;
