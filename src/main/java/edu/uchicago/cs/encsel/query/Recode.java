@@ -1,6 +1,7 @@
 package edu.uchicago.cs.encsel.query;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -58,27 +59,28 @@ public class Recode {
         this.hashRecorder = new RowTempTable(projected);
 
         // Build Hash Table
-        ParquetReaderHelper.read(new File(filepath + ".parquet").toURI(), new EncReaderProcessor() {
+        try{
+            ParquetReaderHelper.read(new File(filepath + ".parquet").toURI(), new EncReaderProcessor() {
 
-            public void processRowGroup(VersionParser.ParsedVersion version, BlockMetaData meta, PageReadStore rowGroup) {
-                ArrayList<ColumnReaderImpl> hashRowReaders = map(version, rowGroup, projected.getColumns());
+                public void processRowGroup(VersionParser.ParsedVersion version, BlockMetaData meta, PageReadStore rowGroup) {
+                    ArrayList<ColumnReaderImpl> hashRowReaders = map(version, rowGroup, projected.getColumns());
 
-                ColumnReaderImpl hashKeyReader = hashRowReaders.get(0); //there should only be one element here
-                for (int i = 0; i < rowGroup.getRowCount(); i++) {
-                    Integer hashKey = -1;
-                    Object o = DataUtils.readValue(hashKeyReader);
-                    if (o instanceof Integer){
-                        hashKey = (Integer) o;
-                    }else{
-                        throw new IllegalArgumentException("Expected Integer, received other type");
-                    }
-                    System.out.printf("hashKey: %d\n", hashKey );
+                    ColumnReaderImpl hashKeyReader = hashRowReaders.get(0); //there should only be one element here
+                    for (int i = 0; i < rowGroup.getRowCount(); i++) {
+                        Integer hashKey = -1;
+                        Object o = DataUtils.readValue(hashKeyReader);
+                        if (o instanceof Integer){
+                            hashKey = (Integer) o;
+                        }else{
+                            throw new IllegalArgumentException("Expected Integer, received other type");
+                        }
+                        System.out.printf("hashKey: %d\n", hashKey );
 
-                    //println(hashKey)
-                    //println(hashKeyReader.getCurrentValueDictionaryID)
+                        //println(hashKey)
+                        //println(hashKeyReader.getCurrentValueDictionaryID)
 
-                    //hashtable.put(hashKey, hashRecorder.getCurrentRecord)
-                    //hashRecorder.start()
+                        //hashtable.put(hashKey, hashRecorder.getCurrentRecord)
+                        //hashRecorder.start()
                     /*if (reader.equals(hashKeyReader)){
                         reader.writeCurrentValueToConverter()
                         reader.consume()
@@ -87,11 +89,15 @@ public class Recode {
                         reader.writeCurrentValueToConverter()
                         reader.consume()
                     }*/
-                    //hashRecorder.end()
+                        //hashRecorder.end()
 
+                    }
                 }
-            }
-        });
+            });
+
+        }catch (IOException e){
+            e.printStackTrace();
+        }
 
         return new HashMap<>(); //WARNING: dummy return value
 
