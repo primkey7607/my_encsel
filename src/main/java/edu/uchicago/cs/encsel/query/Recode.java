@@ -116,7 +116,7 @@ public class Recode {
                         Integer hashKey = hashKeyReader.getCurrentValueDictionaryID();
                         System.out.printf("hashKey: %d\n", hashKey );
                         //codes.add(hashKey);
-                        //hashKeyReader.consume();
+                        hashKeyReader.consume();
 
                         //println(hashKey)
                         //println(hashKeyReader.getCurrentValueDictionaryID)
