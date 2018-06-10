@@ -7,11 +7,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import edu.uchicago.cs.encsel.model.IntEncoding;
+import edu.uchicago.cs.encsel.parquet.EncContext;
 import edu.uchicago.cs.encsel.parquet.EncReaderProcessor;
 import edu.uchicago.cs.encsel.parquet.ParquetReaderHelper;
+import edu.uchicago.cs.encsel.parquet.ParquetWriterHelper;
 import edu.uchicago.cs.encsel.query.bitmap.RoaringBitmap;
 import edu.uchicago.cs.encsel.query.util.DataUtils;
 import edu.uchicago.cs.encsel.query.util.SchemaUtils;
+import org.apache.parquet.it.unimi.dsi.fastutil.objects.Object2IntMap;
 
 import org.apache.parquet.VersionParser;
 import org.apache.parquet.column.ColumnDescriptor;
@@ -174,5 +178,21 @@ public class Recode {
 
         return result;
 
+    }
+
+    public void makeGlobalDict(){
+        //I suppose this was made specifically for the case where lineitem is given, and part is used here.
+        //I will make it general later
+        URI[] input = {new File(this.filepath+".tbl").toURI()};
+        int[] index = this.col;
+        MessageType[] schemas = {schema};
+        Boolean order = true;
+        Object2IntMap dictMap = ParquetWriterHelper.buildGlobalDict(input,index,schemas,order);
+        EncContext.encoding.get().put(TPCHSchema.partSchema().getColumns().get(0).toString(), IntEncoding.valueOf(PPencoding).parquetEncoding());
+        EncContext.context.get().put(TPCHSchema.partSchema().getColumns().get(0).toString(), new Integer[]{pbl,pib});
+        EncContext.globalDict.get().put(TPCHSchema.partSchema().getColumns().get(0).toString(), dictMap);
+
+        ParquetWriterHelper.write(new File(part+".tbl").toURI(), TPCHSchema.partSchema(),
+                new File(part+".parquet").toURI(), "\\|", false, comp);
     }
 }
