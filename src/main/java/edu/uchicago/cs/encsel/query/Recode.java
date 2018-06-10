@@ -1,5 +1,6 @@
 package edu.uchicago.cs.encsel.query;
 
+import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -57,14 +58,20 @@ public class Recode {
         this.hashRecorder = new RowTempTable(projected);
 
         // Build Hash Table
-        ParquetReaderHelper.read(filepath, new EncReaderProcessor() {
+        ParquetReaderHelper.read(new File(filepath + ".parquet").toURI(), new EncReaderProcessor() {
 
             public void processRowGroup(VersionParser.ParsedVersion version, BlockMetaData meta, PageReadStore rowGroup) {
                 ArrayList<ColumnReaderImpl> hashRowReaders = map(version, rowGroup, projected.getColumns());
 
                 ColumnReaderImpl hashKeyReader = hashRowReaders.get(0); //there should only be one element here
                 for (int i = 0; i < rowGroup.getRowCount(); i++) {
-                    int hashKey = DataUtils.readValue(hashKeyReader);
+                    Integer hashKey = -1;
+                    Object o = DataUtils.readValue(hashKeyReader);
+                    if (o instanceof Integer){
+                        hashKey = (Integer) o;
+                    }else{
+                        throw new IllegalArgumentException("Expected Integer, received other type");
+                    }
                     System.out.printf("hashKey: %d\n", hashKey );
 
                     //println(hashKey)
