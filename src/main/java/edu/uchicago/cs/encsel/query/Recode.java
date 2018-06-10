@@ -50,11 +50,7 @@ public class Recode {
         return result;
     }
 
-    public HashMap<Integer,Integer> createMap(){
-        /* Design: Read values using ColumnReader,
-         Read codes using ColumnReader2
-         Zip the two together and return the resulting hashmap
-         */
+    public void addValues(){
         MessageType projected = SchemaUtils.project(schema, col);
         this.hashRecorder = new RowTempTable(projected);
 
@@ -102,6 +98,59 @@ public class Recode {
         }catch (VersionParser.VersionParseException e){
             e.printStackTrace();
         }
+    }
+
+    public void addCodes(){
+        MessageType projected = SchemaUtils.project(schema, col);
+        this.hashRecorder = new RowTempTable(projected);
+
+        // Build Hash Table
+        try{
+            ParquetReaderHelper.read(new File(filepath + ".parquet").toURI(), new EncReaderProcessor() {
+
+                public void processRowGroup(VersionParser.ParsedVersion version, BlockMetaData meta, PageReadStore rowGroup) {
+                    ArrayList<ColumnReaderImpl> hashRowReaders = map(version, rowGroup, projected.getColumns());
+
+                    ColumnReaderImpl hashKeyReader = hashRowReaders.get(0); //there should only be one element here
+                    for (int i = 0; i < rowGroup.getRowCount(); i++) {
+                        Integer hashKey = hashKeyReader.getCurrentValueDictionaryID();
+                        //System.out.printf("hashKey: %d\n", hashKey ); seems to work
+                        values.add(hashKey);
+                        hashKeyReader.consume();
+
+                        //println(hashKey)
+                        //println(hashKeyReader.getCurrentValueDictionaryID)
+
+                        //hashtable.put(hashKey, hashRecorder.getCurrentRecord)
+                        //hashRecorder.start()
+                    /*if (reader.equals(hashKeyReader)){
+                        reader.writeCurrentValueToConverter()
+                        reader.consume()
+                        //skipped = true
+                    }else{
+                        reader.writeCurrentValueToConverter()
+                        reader.consume()
+                    }*/
+                        //hashRecorder.end()
+
+                    }
+                }
+            });
+
+        }catch (IOException e){
+            e.printStackTrace();
+        }catch (VersionParser.VersionParseException e){
+            e.printStackTrace();
+        }
+    }
+
+    public HashMap<Integer,Integer> createMap(){
+        /* Design: Read values using ColumnReader,
+         Read codes using ColumnReader2
+         Zip the two together and return the resulting hashmap
+         */
+        this.addValues();
+        this.addCodes();
 
         return new HashMap<>(); //WARNING: dummy return value
 
