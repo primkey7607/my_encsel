@@ -65,6 +65,7 @@ public class Recode {
                 ColumnReaderImpl hashKeyReader = hashRowReaders.get(0); //there should only be one element here
                 for (int i = 0; i < rowGroup.getRowCount(); i++) {
                     int hashKey = DataUtils.readValue(hashKeyReader);
+                    System.out.printf("hashKey: %d\n", hashKey );
 
                     //println(hashKey)
                     //println(hashKeyReader.getCurrentValueDictionaryID)

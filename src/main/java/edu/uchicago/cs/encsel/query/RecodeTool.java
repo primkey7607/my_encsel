@@ -2,8 +2,10 @@ package edu.uchicago.cs.encsel.query;
 
 import edu.uchicago.cs.encsel.parquet.EncContext;
 import edu.uchicago.cs.encsel.parquet.ParquetWriterHelper;
+import edu.uchicago.cs.encsel.query.Recode;
 
 import java.io.File;
+import java.util.HashMap;
 
 public class RecodeTool {
 
@@ -26,8 +28,11 @@ public class RecodeTool {
         int pbl = 32 - Integer.numberOfLeadingZeros(intbound);
         System.out.println("part intBitLength: "+ bitLength +" part intBound: "+intbound);
 
-
         EncContext.context.get().put(TPCHSchema.lineitemSchema().getColumns().get(1).toString(), new Object[]{bitLength,intbound});
         EncContext.context.get().put(TPCHSchema.partSchema().getColumns().get(0).toString(), new Object[]{pbl,pib});
+        //Just perform "recoding" once, and see what it prints
+        Recode r = new Recode(lineitem, TPCHSchema.lineitemSchema(), new int[]{1});
+        HashMap<Integer,Integer> h = r.createMap();
+
     }
 }
