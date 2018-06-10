@@ -62,7 +62,7 @@ import edu.uchicago.cs.encsel.parquet.OffheapReadSopport;
  *
  */
 public class ColumnReaderImpl2 implements ColumnReader {
-  private static final Logger LOG = LoggerFactory.getLogger(ColumnReaderImpl.class);
+  private static final Logger LOG = LoggerFactory.getLogger(ColumnReaderImpl2.class);
 
   /**
    * binds the lower level page decoder to the record converter materializing the records
@@ -345,7 +345,7 @@ public class ColumnReaderImpl2 implements ColumnReader {
    * @param path the descriptor for the corresponding column
    * @param pageReader the underlying store to read from
    */
-  public ColumnReaderImpl(ColumnDescriptor path, PageReader pageReader, PrimitiveConverter converter, ParsedVersion writerVersion) {
+  public ColumnReaderImpl2(ColumnDescriptor path, PageReader pageReader, PrimitiveConverter converter, ParsedVersion writerVersion) {
     this.path = checkNotNull(path, "path");
     this.pageReader = checkNotNull(pageReader, "pageReader");
     this.converter = checkNotNull(converter, "converter");

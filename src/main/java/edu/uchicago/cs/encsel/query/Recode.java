@@ -1,6 +1,6 @@
 package edu.uchicago.cs.encsel.query;
 
-import java.net.URI
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
