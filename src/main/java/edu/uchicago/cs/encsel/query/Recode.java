@@ -198,7 +198,14 @@ public class Recode {
         EncContext.context.get().put(TPCHSchema.partSchema().getColumns().get(0).toString(), new Integer[]{pbl,pib});
         EncContext.globalDict.get().put(TPCHSchema.partSchema().getColumns().get(0).toString(), dictMap);
 
-        ParquetWriterHelper.write(new File(part+".tbl").toURI(), TPCHSchema.partSchema(),
-                new File(part+".parquet").toURI(), "\\|", false, "UNCOMPRESSED");
+        try {
+            ParquetWriterHelper.write(new File(part+".tbl").toURI(), TPCHSchema.partSchema(),
+                    new File(part+".parquet").toURI(), "\\|", false, "UNCOMPRESSED");
+        }catch (IOException e){
+            e.printStackTrace();
+        }catch (VersionParser.VersionParseException e){
+            e.printStackTrace();
+        }
+
     }
 }
