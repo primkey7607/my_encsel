@@ -75,6 +75,7 @@ public class Recode {
                             throw new IllegalArgumentException("Expected Integer, received other type");
                         }
                         System.out.printf("hashKey: %d\n", hashKey );
+                        hashKeyReader.consume();
 
                         //println(hashKey)
                         //println(hashKeyReader.getCurrentValueDictionaryID)
