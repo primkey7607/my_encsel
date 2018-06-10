@@ -16,6 +16,7 @@ import edu.uchicago.cs.encsel.query.bitmap.RoaringBitmap;
 import edu.uchicago.cs.encsel.query.util.DataUtils;
 import edu.uchicago.cs.encsel.query.util.SchemaUtils;
 import org.apache.parquet.it.unimi.dsi.fastutil.objects.Object2IntMap;
+import edu.uchicago.cs.encsel.query.tpch.TPCHSchema;
 
 import org.apache.parquet.VersionParser;
 import org.apache.parquet.column.ColumnDescriptor;
@@ -183,16 +184,21 @@ public class Recode {
     public void makeGlobalDict(){
         //I suppose this was made specifically for the case where lineitem is given, and part is used here.
         //I will make it general later
+        String part = "../tpch-generator/dbgen/part";
+        String lineitem = "../tpch-generator/dbgen/lineitem";
         URI[] input = {new File(this.filepath+".tbl").toURI()};
         int[] index = this.col;
         MessageType[] schemas = {schema};
         Boolean order = true;
+        int intbound = ParquetWriterHelper.scanIntMaxInTab(new File(lineitem+".tbl").toURI(), 1);
+        int pib = ParquetWriterHelper.scanIntMaxInTab(new File(part+".tbl").toURI(), 0);
+        int pbl = 32 - Integer.numberOfLeadingZeros(intbound);
         Object2IntMap dictMap = ParquetWriterHelper.buildGlobalDict(input,index,schemas,order);
-        EncContext.encoding.get().put(TPCHSchema.partSchema().getColumns().get(0).toString(), IntEncoding.valueOf(PPencoding).parquetEncoding());
+        EncContext.encoding.get().put(TPCHSchema.partSchema().getColumns().get(0).toString(), IntEncoding.valueOf("DICT").parquetEncoding());
         EncContext.context.get().put(TPCHSchema.partSchema().getColumns().get(0).toString(), new Integer[]{pbl,pib});
         EncContext.globalDict.get().put(TPCHSchema.partSchema().getColumns().get(0).toString(), dictMap);
 
         ParquetWriterHelper.write(new File(part+".tbl").toURI(), TPCHSchema.partSchema(),
-                new File(part+".parquet").toURI(), "\\|", false, comp);
+                new File(part+".parquet").toURI(), "\\|", false, "UNCOMPRESSED");
     }
 }
