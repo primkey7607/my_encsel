@@ -62,18 +62,7 @@ public class Recode {
             public void processRowGroup(VersionParser.ParsedVersion version, BlockMetaData meta, PageReadStore rowGroup) {
                 ArrayList<ColumnReaderImpl> hashRowReaders = map(version, rowGroup, projected.getColumns());
 
-                val hashIndex = hashProject.indexOf(joinKey._1)
-
-                val hashKeyReader = hashIndex match {
-                    case -1 => {
-                        val hashKeyCol = hashSchema.getColumns()(joinKey._1)
-                                new ColumnReaderImpl(hashKeyCol, rowGroup.getPageReader(hashKeyCol),
-                                        new PipePrimitiveConverter(hashSchema.getType(joinKey._1).asPrimitiveType()), version)
-                    }
-                    case i => {
-                        hashRowReaders(i)
-                    }
-                }
+                ColumnReaderImpl hashKeyReader = hashRowReaders.get(0); //there should only be one element here
                 // Build hash table
         /*var skipped = false
         var skippedOnce = false*/
