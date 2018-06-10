@@ -71,37 +71,19 @@ class HashJoin extends Join {
           }
         }
         // Build hash table
-        /*var skipped = false
-        var skippedOnce = false*/
         for (i <- 0L until rowGroup.getRowCount) {
-          /*var hashKey :Any = -1
-          if (skipped){
-            if (!skippedOnce){
-              hashKey = DataUtils.readValue(hashKeyReader)
-              skipped = false
-              skippedOnce = true
-            }else {
-              hashKey = DataUtils.readValue(hashKeyReader)
-            }
-          }else{
-              hashKey = DataUtils.readValue(hashKeyReader)
-          }*/
-
-          val hashKey = DataUtils.readValue(hashKeyReader)
+          //val hashKey = DataUtils.readValue(hashKeyReader)
+          val hashKey = hashKeyReader.getCurrentValueDictionaryID
           //println(hashKey)
           //println(hashKeyReader.getCurrentValueDictionaryID)
 
           hashtable.put(hashKey, hashRecorder.getCurrentRecord)
           hashRecorder.start()
           hashRowReaders.foreach(reader => {
-            if (reader.equals(hashKeyReader)){
+            if(reader.getCurrentDefinitionLevel == reader.getDescriptor.getMaxDefinitionLevel){
               reader.writeCurrentValueToConverter()
-              reader.consume()
-              //skipped = true
-            }else{
-              reader.writeCurrentValueToConverter()
-              reader.consume()
             }
+            reader.consume()
           })
           hashRecorder.end()
 
@@ -125,8 +107,9 @@ class HashJoin extends Join {
         val bitmap = new RoaringBitmap()
 
         for (i <- 0L until rowGroup.getRowCount) {
-          val hashKey = DataUtils.readValue(hashKeyReader)
-          hashtable.get(hashKey) match {
+          //val hashKey = DataUtils.readValue(hashKeyReader)
+          val hashKey = hashKeyReader.getCurrentValueDictionaryID
+            hashtable.get(hashKey) match {
             case Some(row) => {
               // Record match in bitmap
               bitmap.set(i, true)
