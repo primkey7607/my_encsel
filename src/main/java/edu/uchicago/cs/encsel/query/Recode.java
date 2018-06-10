@@ -50,6 +50,18 @@ public class Recode {
         return result;
     }
 
+    public ArrayList<ColumnReaderImpl2> map2(VersionParser.ParsedVersion version,
+                                           PageReadStore rowGroup,
+                                           List<ColumnDescriptor> arr){
+        ArrayList<ColumnReaderImpl2> result = new ArrayList<>();
+        for (ColumnDescriptor a : arr){
+            ColumnReaderImpl2 cri = new ColumnReaderImpl2(a, rowGroup.getPageReader(a),
+                    hashRecorder.getConverter(a.getPath()).asPrimitiveConverter(), version);
+            result.add(cri);
+        }
+        return result;
+    }
+
     public void addValues(){
         MessageType projected = SchemaUtils.project(schema, col);
         this.hashRecorder = new RowTempTable(projected);
@@ -109,14 +121,14 @@ public class Recode {
             ParquetReaderHelper.read(new File(filepath + ".parquet").toURI(), new EncReaderProcessor() {
 
                 public void processRowGroup(VersionParser.ParsedVersion version, BlockMetaData meta, PageReadStore rowGroup) {
-                    ArrayList<ColumnReaderImpl> hashRowReaders = map(version, rowGroup, projected.getColumns());
+                    ArrayList<ColumnReaderImpl2> hashRowReaders = map2(version, rowGroup, projected.getColumns());
 
-                    ColumnReaderImpl hashKeyReader = hashRowReaders.get(0); //there should only be one element here
+                    ColumnReaderImpl2 hashKeyReader = hashRowReaders.get(0); //there should only be one element here
                     for (int i = 0; i < rowGroup.getRowCount(); i++) {
                         Integer hashKey = hashKeyReader.getCurrentValueDictionaryID();
                         System.out.printf("hashKey: %d\n", hashKey );
                         //codes.add(hashKey);
-                        hashKeyReader.consume();
+                        //hashKeyReader.consume();
 
                         //println(hashKey)
                         //println(hashKeyReader.getCurrentValueDictionaryID)
