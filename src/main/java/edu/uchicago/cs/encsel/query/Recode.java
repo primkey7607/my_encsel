@@ -201,11 +201,12 @@ public class Recode {
         try {
             ParquetWriterHelper.write(new File(part+".tbl").toURI(), TPCHSchema.partSchema(),
                     new File(part+".parquet").toURI(), "\\|", false, "UNCOMPRESSED");
-        }catch (IOException e){
-            e.printStackTrace();
-        }catch (VersionParser.VersionParseException e){
+        }catch (IOException e) {
             e.printStackTrace();
         }
+        /*}catch (VersionParser.VersionParseException e){
+            e.printStackTrace();
+        }*/
 
     }
 }
