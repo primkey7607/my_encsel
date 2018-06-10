@@ -144,15 +144,23 @@ public class Recode {
         }
     }
 
-    public HashMap<Integer,Integer> createMap(){
+    public HashMap<Integer,Integer> createMap() throws IllegalArgumentException{
         /* Design: Read values using ColumnReader,
          Read codes using ColumnReader2
          Zip the two together and return the resulting hashmap
          */
+        HashMap<Integer,Integer> result = new HashMap<>();
         this.addValues();
         this.addCodes();
+        if (this.codes.size() != this.values.size()){
+            throw new IllegalArgumentException("ERROR: values do not correspond to codes");
+        }
+        for (int i = 0; i < this.codes.size(); i++){
+            result.putIfAbsent(this.values.get(i), this.codes.get(i));
+        }
 
-        return new HashMap<>(); //WARNING: dummy return value
+
+        return result;
 
     }
 }
